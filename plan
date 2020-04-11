@@ -1,0 +1,21 @@
+
+
+
+Tasks:
+
+Performance
+
+decision tree
+h2o.getModelTree(
+
+Feature importance
+h2o.varimp_plot
+
+Partial dependence / ice / ALE
+h2o.partialPlot()
+
+localICE
+
+local explanations
+LIME
+
