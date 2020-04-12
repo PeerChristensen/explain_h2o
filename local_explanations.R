@@ -30,14 +30,6 @@ test <- read_csv("test.csv") %>%
   dplyr::select(-case) %>%
   dplyr::select(names(train))
 
-# 
-# new_data_Churn <- new_data %>%
-#   mutate(Churned30 = factor(new_predictions$predict)) %>%
-#   select(Churned30,everything()) %>%
-#   select(names(train_data)) %>%    # order columns
-#   mutate(Customer_Key = Customer_Key) %>% # for joining later
-#   filter(Churned30 == "1")  # select only churners
-  
 # run lime() on training set
 explainer <- lime::lime(x = train, 
                         model = mod)
@@ -56,24 +48,3 @@ explanation <- lime::explain(x = test,
 toc()
 
 
-
-
-
-library(foreach)
-library(doParallel)
-cores <- detectCores()
-registerDoParallel(cores) 
-cl <- parallel::makeCluster(8)
-doParallel::registerDoParallel(cl)
-
-tic()
-k<- foreach (i=1:8, .combine=rbind) %dopar% {
-  h2o.init()
-  lime::explain(x = test[i, ], 
-                explainer = explainer, 
-                labels = 1,
-                n_features = 4,
-                n_permutations = 1000,
-                kernel_width = 0.5)
-}
-toc()
