@@ -44,6 +44,7 @@ train_hf <- as.h2o(train)
 test_hf <- as.h2o(test)
 
 aml <- h2o.automl(x=x,y=y,training_frame = train_hf,
+                  exploitation_ratio=0.1,
                   max_runtime_secs = 1000,stopping_metric = "AUCPR",
                   sort_metric = "AUCPR")
 

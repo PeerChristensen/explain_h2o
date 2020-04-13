@@ -117,13 +117,24 @@ lift %>%
 # with h2o ??
 h2o.gainsLift(mod,test_hf) %>%
   as_tibble() %>%
-  ggplot(aes(group,cumulative_gain)) +
+  ggplot(aes(cumulative_data_fraction,cumulative_gain)) +
   geom_line()
 
 h2o.gainsLift(mod,test_hf) %>%
   as_tibble() %>%
-  ggplot(aes(group,cumulative_lift)) +
+  ggplot(aes(cumulative_data_fraction,cumulative_lift)) +
   geom_line()
+
+# plot all 
+# it looks like cum. gains is actually cum. capture rate
+h2o.gainsLift(mod,test_hf) %>%
+  as_tibble() %>%
+  select(-group) %>%
+  gather(variable, value, lower_threshold:cumulative_gain) %>%
+  ggplot(aes(x = cumulative_data_fraction, y = value, group = variable)) +
+  facet_wrap(~ variable, ncol = 4, scales = "free") +
+  geom_line(colour = "#BBC605") +
+  theme_h2o_dark()
 
 # with modelplotr
 test <- as_tibble(test_hf)
