@@ -10,7 +10,7 @@ library(h2o)
 
 h2o.init()
 
-file <- list.files("model") 
+file <- list.files("model")[1] 
 mod <- h2o.loadModel(glue::glue("model/{file}"))
 
 train <- read_csv("train.csv")

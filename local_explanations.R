@@ -6,7 +6,7 @@ library(lime)
 
 h2o.init()
 
-file <- list.files("model") 
+file <- list.files("model",pattern="GBM") 
 mod <- h2o.loadModel(glue::glue("model/{file}"))
 
 train <- read_csv("train.csv") %>%
@@ -38,7 +38,7 @@ explainer <- lime::lime(x = train,
 library(tictoc)
 
 tic()
-explanation <- lime::explain(x = test, 
+explanation <- lime::explain(x = test[1:5,], 
                              explainer = explainer, 
                              labels = 1,
                              n_features = 4,
