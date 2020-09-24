@@ -46,5 +46,7 @@ explanation <- lime::explain(x = test[1:5,],
                              feature_select = "highest_weights",
                              kernel_width = 0.5)
 toc()
-
+ 
+plot_features(explanation) +
+  ggthemes::scale_fill_tableau()
 

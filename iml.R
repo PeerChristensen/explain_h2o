@@ -8,7 +8,7 @@ library(iml)
 h2o.init()
 
 file <- list.files("model") 
-mod <- h2o.loadModel(glue::glue("model/{file}"))
+mod <- h2o.loadModel(glue::glue("{here::here()}/model/{file}"))
 
 train <- read_csv("train.csv")
 
@@ -32,7 +32,7 @@ predictor <- Predictor$new(
   data = x, 
   y = y, 
   predict.fun = pred,
-  class = "classification"
+  class = y
 )
 
 imp <- FeatureImp$new(predictor, loss = "f1")
@@ -103,7 +103,7 @@ explainer_gbm <- explain(
 )
 
 # this works
-library(DALEXtra) ?
+library(DALEXtra)
 explainer <- explain_h2o(gbm,data = features,y = response,
                          predict_function = pred,
                          type = "classification")
