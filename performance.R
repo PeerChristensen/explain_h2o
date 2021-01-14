@@ -33,19 +33,30 @@ perf <- h2o.performance(mod,test_hf)
 metrics <- as.data.frame(h2o.metric(perf))
 head(metrics)
 
+theme_set(theme_minimal(base_size=16) +
+              theme(plot.background = element_rect(fill="#343E48",colour ="#343E48"),
+                    panel.background =  element_rect(fill="#343E48",colour ="#343E48"),
+                    panel.grid = element_line(size=.05,),
+                    axis.title = element_blank(),
+                    axis.text = element_text(colour="snow"),
+                    strip.text = element_text(colour="snow",size=16)))
 # all metrics
 metrics %>%
   select(-tns,-fps,-tps,-fns) %>%
   gather(metric, value, f1:tpr) %>%
   ggplot(aes(x = threshold, y = value, group = metric)) +
   facet_wrap(~ metric, ncol = 4, scales = "free") +
-  geom_line(colour = "#BBC605") +
-  theme_h2o_dark()
+  geom_line(colour = "#BBC605")
 
 # AUC
 h2o.auc(mod,xval=T)
 
 options(yardstick.event_first = F)
+
+preds <-  h2o.predict(mod,test_hf) %>% 
+  as_tibble() %>% 
+  dplyr::mutate(case = row_number()) %>%
+  mutate(churn = as.vector(test_hf$churn))
 
 roc <- roc_curve(preds,truth = factor(churn),p1)
 autoplot(roc)
@@ -61,10 +72,11 @@ metrics %>%
   ylim(c(0,1)) +
   theme_minimal()
 
+
 #PR curve with yardstick
 
 # make "1" the prediction of interest
-options(yardstick.event_first = F)
+options(event_level = 'second')
 
 pr <- pr_curve(preds,truth = factor(churn),p1)
 autoplot(pr)
@@ -101,7 +113,7 @@ coords <- tibble(x=c(0,prop_churn,100), y = c(0,100,100))
 gain %>%
   ggplot(aes(.percent_tested,.percent_found)) +
   geom_line(colour="#BBC605",size=1) +
-  theme_h2o_dark() +
+  #theme_h2o_dark() +
   geom_polygon(data=coords, mapping=aes(x=coords$x,y=coords$y), alpha = .2,fill = "#BBC605")
 
 # Cumulative lift with Yardstick
@@ -152,3 +164,4 @@ plot_input <- plotting_scope(prepared_input = scores_and_ntiles)
 
 plot_cumgains(data = plot_input)
 plot_cumlift(data = plot_input)
+

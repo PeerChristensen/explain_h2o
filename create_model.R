@@ -45,20 +45,20 @@ test_hf <- as.h2o(test)
 
 aml <- h2o.automl(x=x,y=y,training_frame = train_hf,leaderboard_frame = test_hf,
                   exploitation_ratio=0.1,
-                  max_runtime_secs = 3600*7,stopping_metric = "AUCPR",
+                  max_runtime_secs = 3600*.1,stopping_metric = "AUCPR",
                   sort_metric = "AUCPR")
 
 # ------------------------------------------------------
-# SAVING A MODEL
+# SAVING MODEL
 # ------------------------------------------------------
 
 aml@leaderboard
 
 model <- h2o.getModel(aml@leaderboard[3,1]) # GBM 0.659 aucpr
 
-unlink("model",recursive = T)
+unlink("model2",recursive = T)
 
-h2o.saveModel(model,"model2")
+h2o.saveModel(model,"model")
 
 h2o.shutdown(prompt = F)
 

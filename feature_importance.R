@@ -12,7 +12,7 @@ library(tidyverse)
 h2o.init()
 
 file <- list.files("model")[1] 
-mod <- h2o.loadModel(glue::glue("model/{file}"))
+mod <- h2o.loadModel(glue::glue("/Users/peerchristensen/Desktop/Projects/explain_h2o_models/model/{file}"))
 
 # ------------------------------------------------------
 # PLOTS
