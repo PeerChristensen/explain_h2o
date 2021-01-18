@@ -6,8 +6,8 @@ library(lime)
 
 h2o.init()
 
-file <- list.files("model2",pattern="GBM") 
-mod <- h2o.loadModel(glue::glue("model2/{file}"))
+file <- list.files("model",pattern="GBM") 
+mod  <- h2o.loadModel(glue::glue("/Users/peerchristensen/Desktop/Projects/explain_h2o_models/model/{file}"))
 
 train <- read_csv("train.csv") %>%
   mutate(churn = as.factor(churn)) %>%
@@ -97,7 +97,19 @@ new_cust_gbm <- iBreakDown::break_down(explainer_gbm, new_observation=new_cust)
 
 plot(new_cust_gbm)
 
+# ------------------------------------------------------------
+
 library(iml)
+
+y <- "churn"
+x <- setdiff(names(train), y) 
+# convert feature data to non-h2o objects
+x_valid <- as.data.frame(test_hf)[, x]
+
+# make response variable numeric binary vector
+y_valid <- as.vector(as.numeric(as.character(test_hf$churn)))
+head(y_valid)
+
 predictor <- Predictor$new(mod, data = x_valid, y = test_hf$churn)
 shapley <- Shapley$new(predictor, x.interest = x_valid[3, ])
 #plot(shapley)
@@ -117,20 +129,20 @@ shapley2 %>%
   coord_flip() +
   ggtitle(paste0("Avg. prob. = ",p1_avg,"\nObs. prob. = ",p1_obs))
 
-# library(shapper)
-# shp <- shapper::shap(explainer_gbm, new_observation = new_cust[,-1],
-#                      data = x_valid,  predict_function = pred)
-
-ive_mod <- individual_variable_effect(mod, 
-                                     data = x_valid, 
-                                     y = y_valid,
-                                     predict_function = pred,
-                                     new_observation = new_cust[,-1], 
-                                     nsamples = 50)
-
-ive_mod <- individual_variable_effect(x=explainer_gbm, 
-                                      data = x_valid, 
-                                      new_observation = new_cust[,-1], 
+#  library(shapper)
+# # shp <- shapper::shap(explainer_gbm, new_observation = new_cust[,-1],
+# #                      data = x_valid,  predict_function = pred)
+# 
+# ive_mod <- individual_variable_effect(mod, 
+#                                      data = x_valid, 
+#                                      y = y_valid,
+#                                      predict_function = pred,
+#                                      new_observation = x_valid[3, ], 
+#                                      nsamples = 50)
+# 
+# ive_mod <- individual_variable_effect(x=explainer_gbm, 
+#                                       data = x_valid, 
+#                                       new_observation = new_cust[,-1], 
                                      
                                       nsamples = 50)
 

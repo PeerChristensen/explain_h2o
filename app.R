@@ -20,6 +20,7 @@ h2o.init()
 back_colour <- "#343E48"
 line_colour <- "yellow4"
 spinner_colour <- "#DCDCDC"
+
 theme_set(theme_minimal(base_size=16) +
             theme(plot.background = element_rect(fill=back_colour,colour =back_colour),
                   panel.background =  element_rect(fill=back_colour,colour =back_colour),
@@ -40,7 +41,7 @@ mod  <- h2o.loadModel(glue::glue("/Users/peerchristensen/Desktop/Projects/explai
 
 train_hf <- h2o.uploadFile(path = "train.csv")
 
-test <- read_csv("test.csv")  %>%
+test <- vroom::vroom("test.csv")  %>%
   mutate(churn = as.factor(churn)) %>%
   mutate_if(is.character,factor) 
 
@@ -95,12 +96,15 @@ aucpr <- round(h2o.aucpr(perf),2)
 # PERFORMANCE CURVES
 # ------------------------------------------------------
 
-options(yardstick.event_first = F)
+#options(yardstick.event_first = F)
 
 #roc
 roc_plot <- metrics %>%
   ggplot(aes(1-specificity,tpr)) + 
   geom_line(size = 1,colour=line_colour) +
+  #geom_line(size = 5, alpha = .2,colour=line_colour) +
+  #geom_line(size = 2.5, alpha = .4,colour=line_colour) +
+  #geom_line(size = 1, alpha = .9,colour=line_colour) +
   ylim(c(0,1)) +
   geom_abline(slope = 1, intercept = 0,linetype="dashed",colour="snow")
 
@@ -113,7 +117,7 @@ prroc_plot <- metrics %>%
   geom_hline(yintercept=baseline_height, linetype='dashed',colour="snow")
 
 # gains
-gain <- gain_curve(preds, truth = factor(churn),p1)
+gain <- gain_curve(preds, truth = factor(churn),p1,event_level = 'second')
 prop_churn <- sum(preds$churn)/nrow(preds)*100
 coords <- tibble(x=c(0,prop_churn,100), y = c(0,100,100))
 
@@ -132,9 +136,9 @@ lift_plot <- h2o.gainsLift(mod,test_hf) %>%
 # ------------------------------------------------------
 # LIME
 # ------------------------------------------------------
-write_rds(explainer,"explainer.rds")
 
 explainer <- read_rds("explainer.rds")
+
 # ------------------------------------------------------
 # UI
 # ------------------------------------------------------
@@ -327,6 +331,8 @@ server <- function(input, output) {
     #PDP
     if (input$tabs=="pdp") {
     
+    output$pdp_plot <- renderPlot(ggplot())
+    
     observeEvent(input$pdp_go,{
       
       observeEvent(input$pdp_features,{
@@ -379,7 +385,9 @@ server <- function(input, output) {
         geom_line(size=1,colour=line_colour) +
         geom_ribbon(aes(ymin=lower,ymax=upper),
                     alpha=.2,colour=NA,fill=line_colour) +
-        facet_wrap(~variable,scales="free_x") 
+        facet_wrap(~variable,scales="free_x") +
+        theme(axis.title.x = element_blank(),
+              axis.text.x = element_blank())
       })
       }
       })
@@ -395,6 +403,7 @@ server <- function(input, output) {
       explanation <- lime::explain(x = test[as.numeric(input$lime_cust),], 
                                    explainer = explainer, 
                                    n_labels = 1,
+                                   n_permutations = 2500,
                                    n_features = input$lime_n_feat)
     
       output$lime_plot <- renderPlot({

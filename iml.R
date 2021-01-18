@@ -35,8 +35,8 @@ predictor <- Predictor$new(
   class = y
 )
 
-imp <- FeatureImp$new(predictor, loss = "f1")
-plot(imp)
+#imp <- FeatureImp$new(predictor, loss = "f1")
+#plot(imp)
 
 df <- rsample::attrition %>% 
   mutate_if(is.ordered, factor, ordered = FALSE) %>%
@@ -104,14 +104,18 @@ explainer_gbm <- explain(
 
 # this works
 library(DALEXtra)
-explainer <- explain_h2o(gbm,data = features,y = response,
+y <- "churn"
+x <- setdiff(names(train),y)
+
+explainer <- explain_h2o(mod,data = train,y = y,
                          predict_function = pred,
                          type = "classification")
             
-pdp_h2o_gbm <- DALEX::variable_effect(explainer, variable = "YearsAtCompany",
+pdp_h2o_gbm <- DALEX::variable_effect(explainer, variable = "eqpdays",
                                       type="partial_dependency") 
+plot(pdp_h2o_gbm)
 
-ale_h2o_gbm <- DALEX::variable_effect(explainer, variable = "YearsAtCompany",
+ale_h2o_gbm <- DALEX::variable_effect(explainer, variable = "eqpdays",
                                       type='accumulated_dependency') 
 plot(ale_h2o_gbm)
 
