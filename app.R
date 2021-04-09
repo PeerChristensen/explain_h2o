@@ -35,9 +35,9 @@ theme_set(theme_minimal(base_size=16) +
 file <- list.files("model",pattern="GBM") 
 mod  <- h2o.loadModel(glue::glue("/Users/peerchristensen/Desktop/Projects/explain_h2o_models/model/{file}"))
 
-# train <- read_csv("train.csv") %>%
-#   mutate(churn = as.factor(churn)) %>%
-#   mutate_if(is.character,factor) 
+ # train <- read_csv("train.csv") %>%
+ #   mutate(churn = as.factor(churn)) %>%
+ #   mutate_if(is.character,factor) 
 
 train_hf <- h2o.uploadFile(path = "train.csv")
 
@@ -136,7 +136,9 @@ lift_plot <- h2o.gainsLift(mod,test_hf) %>%
 # ------------------------------------------------------
 # LIME
 # ------------------------------------------------------
-
+# explainer <- lime::lime(x = train, 
+#                         model = mod)
+# write_rds(explainer,"explainer.rds")
 explainer <- read_rds("explainer.rds")
 
 # ------------------------------------------------------
@@ -168,7 +170,7 @@ body <-  dashboardBody(
     tabItems(
       tabItem(tabName = "metrics",
               fluidRow(
-                box(width=9, withSpinner(plotOutput("metrics_plot", height = 500),color=)),
+                box(width=9, withSpinner(plotOutput("metrics_plot", height = 500),color=spinner_colour)),
                 box(width=3, title = "Metrics to plot",
                   pickerInput(
                     inputId  = "pick_metrics",

@@ -5,8 +5,10 @@ library(ggbeeswarm)
 
 h2o.init()
 
-file <- list.files("model") 
-mod <- h2o.loadModel(glue::glue("model/{file}"))
+path <- here::here()
+file <- list.files(pattern="GBM",recursive = T) 
+
+mod <- h2o.loadModel(glue::glue("{path}/{file}"))
 
 test_hf <- read_csv("test.csv") %>% as.h2o()
 
@@ -33,7 +35,9 @@ h2o.feature_interaction(mod,test_hf,  max_interaction_depth = 10,
 h2o.partialPlot(mod,test_hf,cols="eqpdays")
 
 h2o.shap_explain_row_plot(mod, test_hf, row_index = 510,top_n_features = 5)
-h2o.shap_summary_plot(mod, test_hf, top_n_features = 10)
+h2o.shap_summary_plot(mod, test_hf, top_n_features = 10) +
+  scale_colour_viridis_c() +
+  theme_dark()
 h2o.pd_plot(mod, test_hf,column = "eqpdays")
 h2o.pd_plot(mod, test_hf, row_index = 5100, column = "eqpdays")
 h2o.ice_plot(mod, test_hf, column = "eqpdays")

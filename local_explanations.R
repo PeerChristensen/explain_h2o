@@ -6,8 +6,10 @@ library(lime)
 
 h2o.init()
 
-file <- list.files("model",pattern="GBM") 
-mod  <- h2o.loadModel(glue::glue("/Users/peerchristensen/Desktop/Projects/explain_h2o_models/model/{file}"))
+path <- here::here()
+file <- list.files(pattern="GBM",recursive = T) 
+
+mod <- h2o.loadModel(glue::glue("{path}/{file}"))
 
 train <- read_csv("train.csv") %>%
   mutate(churn = as.factor(churn)) %>%

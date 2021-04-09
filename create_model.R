@@ -24,7 +24,7 @@ df <- read_csv("Telecom_customer_churn.csv") %>%
 # DATA PARTITIONING
 # ------------------------------------------------------
 
-ind <- createDataPartition(df$churn,p=.7,list=F)
+ind <- createDataPartition(df$churn,p=.7,list=F) %>% as.vector()
 
 train <- df[ind,]
 write_csv(train, "train.csv")
@@ -38,14 +38,14 @@ x <- setdiff(names(df),y)
 # MODEL TRAINING
 # ------------------------------------------------------
 
-h2o.init(nthreads = -1, max_mem_size = "15G")
+h2o.init()
 
 train_hf <- as.h2o(train)
 test_hf <- as.h2o(test)
 
-aml <- h2o.automl(x=x,y=y,training_frame = train_hf,leaderboard_frame = test_hf,
-                  exploitation_ratio=0.1,
-                  max_runtime_secs = 3600*.1,stopping_metric = "AUCPR",
+aml <- h2o.automl(x=x,y=y,training_frame = train_hf,leaderboard_frame = test_hf,include_algos = "GBM",
+                  exploitation_ratio=0.1,max_models = 500,balance_classes = T,
+                  max_runtime_secs = 1000,stopping_metric = "AUCPR",
                   sort_metric = "AUCPR")
 
 # ------------------------------------------------------
@@ -54,11 +54,11 @@ aml <- h2o.automl(x=x,y=y,training_frame = train_hf,leaderboard_frame = test_hf,
 
 aml@leaderboard
 
-model <- h2o.getModel(aml@leaderboard[3,1]) # GBM 0.659 aucpr
+model <- h2o.getModel(aml@leaderboard[3,1]) # GBM 0.674 aucpr
 
 unlink("model2",recursive = T)
 
-h2o.saveModel(model,"model")
+h2o.saveModel(aml@leader,"model",force = T)
 
 h2o.shutdown(prompt = F)
 
